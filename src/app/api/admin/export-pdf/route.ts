@@ -161,7 +161,7 @@ export async function GET(request: NextRequest) {
   }
 
   const pdfBytes = await doc.save();
-  return new NextResponse(pdfBytes, {
+  return new NextResponse(Buffer.from(pdfBytes), {
     headers: {
       "Content-Type": "application/pdf",
       "Content-Disposition": `attachment; filename="${document}_${inscription_id.slice(0, 8)}.pdf"`,
