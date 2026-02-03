@@ -6,6 +6,8 @@ import { Button } from "@/components/ui/Button";
 import { ArrowLeft, Users, Calendar, Download } from "lucide-react";
 import { InscriptionsBlock } from "@/components/admin/InscriptionsBlock";
 
+export const dynamic = "force-dynamic";
+
 export default async function AdminSessionDetailPage({
   params,
 }: {

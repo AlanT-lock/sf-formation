@@ -4,6 +4,8 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Plus, Calendar, Users } from "lucide-react";
 
+export const dynamic = "force-dynamic";
+
 export default async function AdminSessionsPage() {
   const { data: sessions } = await supabase
     .from("sessions")

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
@@ -41,14 +41,26 @@ interface StepModalProps {
   onComplete: () => void;
 }
 
+function pendingKey(p: PendingStep | null): string {
+  if (!p) return "";
+  return `${p.inscription_id}-${p.step_type}-${p.creneau_id ?? "null"}`;
+}
+
 export function StepModal({ pending, onClose, onComplete }: StepModalProps) {
   const [questions, setQuestions] = useState<Question[]>([]);
   const [reponses, setReponses] = useState<Record<string, string | string[]>>({});
   const [loading, setLoading] = useState(false);
   const [showSignature, setShowSignature] = useState(true);
+  const lastPendingKeyRef = useRef<string>("");
 
   useEffect(() => {
-    if (!pending) return;
+    if (!pending) {
+      lastPendingKeyRef.current = "";
+      return;
+    }
+    const key = pendingKey(pending);
+    if (key === lastPendingKeyRef.current) return;
+    lastPendingKeyRef.current = key;
     const doc = STEP_TO_DOC[pending.step_type];
     if (doc) {
       const url = `/api/stagiaire/questions?document_type=${doc}&inscription_id=${encodeURIComponent(pending.inscription_id)}`;

@@ -3,6 +3,8 @@ import { supabase } from "@/lib/supabase";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/Card";
 import { Calendar, Users, GraduationCap, ArrowRight } from "lucide-react";
 
+export const dynamic = "force-dynamic";
+
 export default async function AdminDashboardPage() {
   const [
     { count: sessionsCount },

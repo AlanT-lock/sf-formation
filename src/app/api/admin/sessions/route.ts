@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { revalidatePath } from "next/cache";
 import { getSession } from "@/lib/auth";
 import { supabase } from "@/lib/supabase";
 
@@ -68,6 +69,10 @@ export async function POST(request: NextRequest) {
     }));
     await supabase.from("session_dates").insert(dateRows);
   }
+
+  revalidatePath("/admin", "layout");
+  revalidatePath("/admin/sessions");
+  revalidatePath(`/admin/sessions/${sessionRow.id}`);
 
   return NextResponse.json(sessionRow);
 }

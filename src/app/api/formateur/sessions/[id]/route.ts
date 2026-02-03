@@ -37,5 +37,24 @@ export async function GET(
   if (error || !data) {
     return NextResponse.json({ error: error?.message ?? "Session non trouvée" }, { status: 404 });
   }
-  return NextResponse.json(data);
+
+  const inscriptionIds =
+    (data.inscriptions as { id: string }[] | null)?.map((i) => i.id) ?? [];
+  let stepCompletions: { inscription_id: string; step_type: string; creneau_id: string | null }[] = [];
+  if (inscriptionIds.length > 0) {
+    const { data: completions } = await supabase
+      .from("step_completions")
+      .select("inscription_id, step_type, creneau_id")
+      .in("inscription_id", inscriptionIds);
+    stepCompletions = (completions ?? []) as {
+      inscription_id: string;
+      step_type: string;
+      creneau_id: string | null;
+    }[];
+  }
+
+  return NextResponse.json({
+    ...data,
+    step_completions: stepCompletions,
+  });
 }

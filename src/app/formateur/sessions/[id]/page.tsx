@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/Card";
@@ -15,6 +15,7 @@ import {
   ThumbsUp,
   FileText,
   PenLine,
+  RefreshCw,
 } from "lucide-react";
 import type { StepType } from "@/types/database";
 
@@ -41,6 +42,12 @@ interface Trigger {
   triggered_at: string;
 }
 
+interface StepCompletion {
+  inscription_id: string;
+  step_type: string;
+  creneau_id: string | null;
+}
+
 interface Session {
   id: string;
   nom: string;
@@ -48,7 +55,8 @@ interface Session {
   formation: { nom: string } | null;
   session_creneaux: Creneau[];
   session_step_triggers: Trigger[];
-  inscriptions: { id: string; stagiaire: { nom: string; prenom: string } | null }[];
+  inscriptions: { id: string; stagiaire_id: string; stagiaire: { nom: string; prenom: string } | null }[];
+  step_completions?: StepCompletion[];
 }
 
 export default function FormateurSessionPage() {
@@ -58,23 +66,33 @@ export default function FormateurSessionPage() {
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
   const [triggering, setTriggering] = useState<string | null>(null);
+  const [refreshing, setRefreshing] = useState(false);
   const [creneauTimes, setCreneauTimes] = useState<Record<string, { debut?: string; fin?: string }>>({});
 
-  useEffect(() => {
-    (async () => {
-      try {
-        const res = await fetch(`/api/formateur/sessions/${id}`);
-        if (!res.ok) throw new Error("Session non trouvée");
-        const data = await res.json();
-        setSession(data);
-      } catch {
-        toast.error("Session non trouvée");
-        router.push("/formateur");
-      } finally {
-        setLoading(false);
-      }
-    })();
+  const fetchSession = useCallback(async () => {
+    try {
+      const res = await fetch(`/api/formateur/sessions/${id}`);
+      if (!res.ok) throw new Error("Session non trouvée");
+      const data = await res.json();
+      setSession(data);
+    } catch {
+      toast.error("Session non trouvée");
+      router.push("/formateur");
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
+    }
   }, [id, router]);
+
+  useEffect(() => {
+    setLoading(true);
+    fetchSession();
+  }, [fetchSession]);
+
+  function handleRefresh() {
+    setRefreshing(true);
+    fetchSession();
+  }
 
   async function triggerStep(stepType: StepType, creneauId?: string) {
     setTriggering(stepType + (creneauId ?? ""));
@@ -87,22 +105,7 @@ export default function FormateurSessionPage() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Erreur");
       toast.success("Étape envoyée aux stagiaires");
-      setSession((prev) =>
-        prev
-          ? {
-              ...prev,
-              session_step_triggers: [
-                ...prev.session_step_triggers,
-                {
-                  id: data.id,
-                  step_type: stepType,
-                  creneau_id: creneauId ?? null,
-                  triggered_at: new Date().toISOString(),
-                },
-              ],
-            }
-          : null
-      );
+      fetchSession();
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Erreur");
     } finally {
@@ -159,6 +162,38 @@ export default function FormateurSessionPage() {
     },
     {} as Record<string, boolean>
   );
+
+  const completionsSet = new Set(
+    (session.step_completions ?? []).map(
+      (c) => `${c.inscription_id}-${c.step_type}-${c.creneau_id ?? "null"}`
+    )
+  );
+  function isCompleted(inscriptionId: string, stepType: StepType, creneauId: string | null) {
+    return completionsSet.has(
+      `${inscriptionId}-${stepType}-${creneauId ?? "null"}`
+    );
+  }
+
+  const inscriptions = session.inscriptions ?? [];
+  const triggers = session.session_step_triggers ?? [];
+  const documentsToShow: { step_type: StepType; creneau_id: string | null; creneau_ordre?: number; label: string }[] = [];
+  triggers.forEach((t) => {
+    if (t.step_type === "emargement" && t.creneau_id) {
+      const creneau = creneaux.find((c) => c.id === t.creneau_id);
+      documentsToShow.push({
+        step_type: "emargement",
+        creneau_id: t.creneau_id,
+        creneau_ordre: creneau?.ordre,
+        label: `Émargement — Créneau ${creneau?.ordre ?? "?"}`,
+      });
+    } else if (t.step_type !== "emargement") {
+      documentsToShow.push({
+        step_type: t.step_type,
+        creneau_id: null,
+        label: STEP_LABELS[t.step_type],
+      });
+    }
+  });
 
   return (
     <div className="space-y-6">
@@ -299,6 +334,78 @@ export default function FormateurSessionPage() {
           </Button>
         </CardContent>
       </Card>
+
+      {documentsToShow.length > 0 && (
+        <Card>
+          <CardHeader className="flex flex-row items-start justify-between gap-4">
+            <div>
+              <CardTitle className="flex items-center gap-2">
+                <PenLine className="w-5 h-5" />
+                Suivi des documents par stagiaire
+              </CardTitle>
+              <p className="text-sm text-slate-500 mt-1">
+                Pour chaque document envoyé, liste des stagiaires : rempli/confirmé ou en attente.
+              </p>
+            </div>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleRefresh}
+              disabled={refreshing}
+              className="shrink-0"
+            >
+              <RefreshCw className={`w-4 h-4 mr-1 ${refreshing ? "animate-spin" : ""}`} />
+              Rafraîchir
+            </Button>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {documentsToShow.map((doc) => {
+              const completedIds = inscriptions.filter((ins) =>
+                isCompleted(ins.id, doc.step_type, doc.creneau_id)
+              ).length;
+              const pendingIds = inscriptions.length - completedIds;
+              return (
+                <div
+                  key={`${doc.step_type}-${doc.creneau_id ?? "x"}`}
+                  className="border border-slate-200 rounded-lg overflow-hidden"
+                >
+                  <div className="px-4 py-3 bg-slate-50 border-b border-slate-200 flex items-center justify-between gap-2">
+                    <span className="font-medium text-slate-800">{doc.label}</span>
+                    <span className="text-sm text-slate-500">
+                      {completedIds} rempli(s) · {pendingIds} en attente
+                    </span>
+                  </div>
+                  <ul className="divide-y divide-slate-100">
+                    {inscriptions.map((ins) => {
+                      const done = isCompleted(ins.id, doc.step_type, doc.creneau_id);
+                      const nomStagiaire = ins.stagiaire
+                        ? `${ins.stagiaire.prenom} ${ins.stagiaire.nom}`
+                        : "—";
+                      return (
+                        <li
+                          key={ins.id}
+                          className="flex items-center justify-between gap-2 px-4 py-2.5"
+                        >
+                          <span className="text-sm text-slate-800">{nomStagiaire}</span>
+                          <span
+                            className={`text-xs font-medium px-2 py-1 rounded ${
+                              done
+                                ? "bg-green-100 text-green-800"
+                                : "bg-amber-100 text-amber-800"
+                            }`}
+                          >
+                            {done ? "Rempli / confirmé" : "En attente"}
+                          </span>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                </div>
+              );
+            })}
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 }
