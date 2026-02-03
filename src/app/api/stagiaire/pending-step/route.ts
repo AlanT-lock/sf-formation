@@ -23,7 +23,7 @@ export async function GET() {
     return NextResponse.json({ pending: null });
   }
   const inscriptionIds = inscriptions.map((i) => i.id);
-  const sessionIds = [...new Set(inscriptions.map((i) => i.session_id))];
+  const sessionIds = Array.from(new Set(inscriptions.map((i) => i.session_id)));
   const { data: triggers } = await supabase
     .from("session_step_triggers")
     .select("id, session_id, step_type, creneau_id, triggered_at")
