@@ -44,7 +44,10 @@ export default async function FormateurDashboardPage() {
       ) : (
         <ul className="space-y-3">
           {sessions.map((s) => {
-            const formation = s.formation as { nom: string } | null;
+            type FormationRef = { nom: string } | null;
+            const formation: FormationRef = Array.isArray(s.formation)
+              ? (s.formation[0] as FormationRef) ?? null
+              : (s.formation as FormationRef);
             return (
               <li key={s.id}>
                 <Link href={`/formateur/sessions/${s.id}`}>

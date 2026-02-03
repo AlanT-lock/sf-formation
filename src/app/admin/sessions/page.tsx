@@ -59,8 +59,14 @@ export default async function AdminSessionsPage() {
           ) : (
             <ul className="divide-y divide-slate-100">
               {sessions.map((s) => {
-                const formation = s.formation as { id: string; nom: string } | null;
-                const formateur = s.formateur as { id: string; nom: string; prenom: string } | null;
+                type FormationRef = { id: string; nom: string } | null;
+                type FormateurRef = { id: string; nom: string; prenom: string } | null;
+                const formation: FormationRef = Array.isArray(s.formation)
+                  ? (s.formation[0] as FormationRef) ?? null
+                  : (s.formation as FormationRef);
+                const formateur: FormateurRef = Array.isArray(s.formateur)
+                  ? (s.formateur[0] as FormateurRef) ?? null
+                  : (s.formateur as FormateurRef);
                 const nbInscrits = countBySession[s.id] ?? 0;
                 return (
                   <li key={s.id} className="py-4 first:pt-0">

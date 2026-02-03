@@ -34,11 +34,17 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: "Inscription non trouvée" }, { status: 404 });
   }
 
-  const stagiaire = inscription.stagiaire as { nom: string; prenom: string } | null;
-  const sessionData = inscription.session as { nom: string; formation: { nom: string } | null } | null;
+  type StagiaireRef = { nom: string; prenom: string } | null;
+  type SessionRef = { nom: string; formation: { nom: string } | null | { nom: string }[] } | null;
+  const rawSt = inscription.stagiaire;
+  const stagiaire: StagiaireRef = Array.isArray(rawSt) ? (rawSt[0] as StagiaireRef) ?? null : (rawSt as StagiaireRef);
+  const rawSession = inscription.session;
+  const sessionData: SessionRef = Array.isArray(rawSession) ? (rawSession[0] as SessionRef) ?? null : (rawSession as SessionRef);
+  const formationObj = sessionData?.formation;
+  const formation = Array.isArray(formationObj) ? formationObj[0] : formationObj;
   const nomStagiaire = stagiaire ? `${stagiaire.prenom} ${stagiaire.nom}` : "—";
   const nomSession = sessionData?.nom ?? "—";
-  const nomFormation = sessionData?.formation?.nom ?? "—";
+  const nomFormation = (formation && typeof formation === "object" && "nom" in formation) ? formation.nom : "—";
 
   const doc = await PDFDocument.create();
   const font = await doc.embedFont(StandardFonts.Helvetica);
@@ -106,8 +112,9 @@ export async function GET(request: NextRequest) {
     addText("Feuille d'émargement", { bold: true });
     y -= 5;
     for (const e of emargements || []) {
-      const creneau = e.creneau as { ordre: number } | null;
-      const ordre = creneau?.ordre ?? "?";
+      const rawC = e.creneau;
+      const creneau = Array.isArray(rawC) ? rawC[0] : rawC;
+      const ordre = creneau && typeof creneau === "object" && "ordre" in creneau ? creneau.ordre : "?";
       const date = e.signed_at
         ? new Date(e.signed_at).toLocaleString("fr-FR", {
             dateStyle: "short",
