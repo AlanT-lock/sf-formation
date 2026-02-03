@@ -31,7 +31,8 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=votre-anon-key
 JWT_SECRET=une-cle-secrete-min-32-caracteres
 ```
 
-3. Exécuter le schéma SQL Supabase : ouvrir le fichier `supabase/schema.sql` dans l’éditeur SQL de votre projet Supabase et exécuter tout le script.
+3. Exécuter le schéma SQL Supabase : ouvrir le fichier `supabase/schema.sql` dans l’éditeur SQL de votre projet Supabase et exécuter tout le script.  
+   **Base déjà existante** : si vous aviez exécuté une ancienne version du schéma, exécutez en plus `supabase/migration_formation_documents.sql` pour ajouter les documents par formation et les questions par formation.
 
 4. Créer le compte admin directement en BDD Supabase :
 
@@ -64,13 +65,14 @@ Ouvrir [http://localhost:3000](http://localhost:3000).
 - Enquête de satisfaction (questions en BDD, échelles / texte libre)
 - Bilan final (rempli par le formateur, questions en BDD)
 
-Les questions des tests et enquêtes sont à saisir dans la table `questions` (Supabase) avec `document_type`, `ordre`, `libelle`, `type_reponse`, `options` (JSONB).
+Les questions des tests et enquêtes se gèrent depuis l’admin : **Formations** → choisir une formation → modifier le nom des documents (tests) et gérer les questions par document (libellé, format de réponse : QCM, texte libre, liste, échelle, options).
 
 ## Structure des espaces
 
 - `/` — Choix du rôle (Admin / Formateur / Stagiaire)
 - `/admin` — Tableau de bord admin
-- `/admin/sessions`, `/admin/stagiaires`, `/admin/formateurs` — CRUD
+- `/admin/sessions`, `/admin/formations`, `/admin/stagiaires`, `/admin/formateurs` — CRUD
+- `/admin/formations/[id]` — Documents (tests) et questions par formation
 - `/admin/sessions/[id]` — Détail session, inscriptions, analyse des besoins
 - `/admin/sessions/[id]/pdf` — Export PDF par stagiaire et par document
 - `/formateur` — Sessions du formateur

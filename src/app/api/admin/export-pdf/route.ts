@@ -137,11 +137,22 @@ export async function GET(request: NextRequest) {
         : "Enquête de satisfaction";
     addText(docType, { bold: true });
     y -= 5;
-    const { data: questions } = await supabase
+    let questionsQuery = supabase
       .from("questions")
       .select("id, libelle, ordre")
       .eq("document_type", document)
       .order("ordre");
+    if (inscription?.session_id) {
+      const { data: sess } = await supabase
+        .from("sessions")
+        .select("formation_id")
+        .eq("id", inscription.session_id)
+        .single();
+      if (sess?.formation_id) {
+        questionsQuery = questionsQuery.eq("formation_id", sess.formation_id);
+      }
+    }
+    const { data: questions } = await questionsQuery;
     const { data: reponses } = await supabase
       .from("reponses")
       .select("question_id, valeur, valeur_json")

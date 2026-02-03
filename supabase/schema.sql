@@ -115,9 +115,23 @@ CREATE TABLE session_step_triggers (
   triggered_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- Questions (remplies en BDD par l'admin) par type de document
+-- Documents (tests) par formation (nom affiché, ordre)
+CREATE TABLE formation_documents (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  formation_id UUID NOT NULL REFERENCES formations(id) ON DELETE CASCADE,
+  document_type document_type NOT NULL,
+  nom_affiche TEXT NOT NULL,
+  ordre INTEGER NOT NULL DEFAULT 0,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  UNIQUE(formation_id, document_type)
+);
+
+CREATE INDEX idx_formation_documents_formation ON formation_documents(formation_id);
+
+-- Questions (remplies en BDD par l'admin) par formation et type de document
 CREATE TABLE questions (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  formation_id UUID NOT NULL REFERENCES formations(id) ON DELETE CASCADE,
   document_type document_type NOT NULL,
   ordre INTEGER NOT NULL,
   libelle TEXT NOT NULL,
@@ -163,6 +177,7 @@ CREATE INDEX idx_inscriptions_session ON inscriptions(session_id);
 CREATE INDEX idx_inscriptions_stagiaire ON inscriptions(stagiaire_id);
 CREATE INDEX idx_session_step_triggers_session ON session_step_triggers(session_id);
 CREATE INDEX idx_questions_document_type ON questions(document_type);
+CREATE INDEX idx_questions_formation_document ON questions(formation_id, document_type);
 CREATE INDEX idx_reponses_inscription ON reponses(inscription_id);
 CREATE INDEX idx_emargements_inscription ON emargements(inscription_id);
 CREATE INDEX idx_step_completions_inscription ON step_completions(inscription_id);
@@ -173,3 +188,16 @@ CREATE INDEX idx_step_completions_inscription ON step_completions(inscription_id
 
 -- Insert formation par défaut
 INSERT INTO formations (nom) VALUES ('Hygiène alimentaire');
+
+-- Documents par défaut pour la formation Hygiène alimentaire
+INSERT INTO formation_documents (formation_id, document_type, nom_affiche, ordre)
+SELECT f.id, dt.document_type, dt.nom_affiche, dt.ordre
+FROM formations f
+CROSS JOIN (
+  VALUES
+    ('test_pre'::document_type, 'Test de pré-formation', 1),
+    ('points_cles'::document_type, 'Test Points clés', 2),
+    ('test_fin'::document_type, 'Test de fin de formation', 3),
+    ('enquete_satisfaction'::document_type, 'Enquête de satisfaction', 4),
+    ('bilan_final'::document_type, 'Bilan final', 5)
+) AS dt(document_type, nom_affiche, ordre);

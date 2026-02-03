@@ -2,11 +2,12 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, Users, GraduationCap, Calendar, LogOut } from "lucide-react";
+import { LayoutDashboard, Users, GraduationCap, Calendar, FileText, LogOut } from "lucide-react";
 
 const links = [
   { href: "/admin", label: "Tableau de bord", icon: LayoutDashboard },
   { href: "/admin/sessions", label: "Sessions", icon: Calendar },
+  { href: "/admin/formations", label: "Formations", icon: FileText },
   { href: "/admin/stagiaires", label: "Stagiaires", icon: Users },
   { href: "/admin/formateurs", label: "Formateurs", icon: GraduationCap },
 ];

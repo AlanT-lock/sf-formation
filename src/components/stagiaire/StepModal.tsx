@@ -51,7 +51,8 @@ export function StepModal({ pending, onClose, onComplete }: StepModalProps) {
     if (!pending) return;
     const doc = STEP_TO_DOC[pending.step_type];
     if (doc) {
-      fetch(`/api/stagiaire/questions?document_type=${doc}`)
+      const url = `/api/stagiaire/questions?document_type=${doc}&inscription_id=${encodeURIComponent(pending.inscription_id)}`;
+      fetch(url)
         .then((r) => r.json())
         .then((data) => setQuestions(Array.isArray(data) ? data : []))
         .catch(() => setQuestions([]));

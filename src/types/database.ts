@@ -49,6 +49,15 @@ export interface Formation {
   created_at: string;
 }
 
+export interface FormationDocument {
+  id: string;
+  formation_id: string;
+  document_type: DocumentType;
+  nom_affiche: string;
+  ordre: number;
+  created_at: string;
+}
+
 export interface Session {
   id: string;
   formation_id: string;
@@ -91,6 +100,7 @@ export interface SessionStepTrigger {
 
 export interface Question {
   id: string;
+  formation_id: string;
   document_type: DocumentType;
   ordre: number;
   libelle: string;
