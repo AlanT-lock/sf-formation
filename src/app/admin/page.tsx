@@ -1,7 +1,6 @@
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/Card";
-import Link from "next/link";
 import { Calendar, Users, GraduationCap, ArrowRight, BarChart3 } from "lucide-react";
 
 export const dynamic = "force-dynamic";
