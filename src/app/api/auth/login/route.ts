@@ -24,16 +24,6 @@ export async function POST(request: NextRequest) {
       .ilike("username", searchUsername)
       .single();
 
-    // Debug (à retirer après) — regarde le terminal où tourne "npm run dev"
-    if (error) {
-      console.log("[Login] Supabase error:", error.code, error.message, error.cause ?? "");
-    }
-    if (!user) {
-      console.log("[Login] Aucun utilisateur trouvé pour:", searchUsername);
-    } else {
-      console.log("[Login] Utilisateur trouvé:", user.username, "role:", user.role, "hash length:", user.password_hash?.length ?? 0);
-    }
-
     if (error || !user) {
       return NextResponse.json(
         { error: "Identifiant ou mot de passe incorrect" },
@@ -45,7 +35,6 @@ export async function POST(request: NextRequest) {
     const isFirstLogin = !user.first_login_done;
     if (!isFirstLogin) {
       const valid = await verifyPassword(password, user.password_hash);
-      console.log("[Login] Vérification mot de passe:", valid ? "OK" : "ÉCHEC");
       if (!valid) {
         return NextResponse.json(
           { error: "Identifiant ou mot de passe incorrect" },

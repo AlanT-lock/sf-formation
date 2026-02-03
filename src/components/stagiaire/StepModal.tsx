@@ -7,8 +7,7 @@ import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { SignaturePad } from "./SignaturePad";
 import toast from "react-hot-toast";
-import type { StepType } from "@/types/database";
-import type { DocumentType } from "@/types/database";
+import type { StepType, DocumentType, PendingStep } from "@/types/database";
 
 const STEP_LABELS: Record<StepType, string> = {
   test_pre: "Test de pré-formation",
@@ -34,16 +33,6 @@ interface Question {
   libelle: string;
   type_reponse: string;
   options: Record<string, unknown> | null;
-}
-
-interface PendingStep {
-  trigger_id: string;
-  inscription_id: string;
-  session_id: string;
-  session_nom: string;
-  step_type: StepType;
-  creneau_id: string | null;
-  creneau_ordre: number | null;
 }
 
 interface StepModalProps {
@@ -79,6 +68,7 @@ export function StepModal({ pending, onClose, onComplete }: StepModalProps) {
 
   async function handleSubmitForm(e: React.FormEvent) {
     e.preventDefault();
+    if (!pending) return;
     setLoading(true);
     try {
       const reponsesList = Object.entries(reponses).map(([question_id, val]) => ({
@@ -115,6 +105,7 @@ export function StepModal({ pending, onClose, onComplete }: StepModalProps) {
   }
 
   function handleSignatureSave(dataUrl: string) {
+    if (!pending) return;
     setLoading(true);
     fetch("/api/stagiaire/emargement", {
       method: "POST",

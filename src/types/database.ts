@@ -124,3 +124,13 @@ export interface StepCompletion {
   creneau_id: string | null;
   completed_at: string;
 }
+
+export interface PendingStep {
+  trigger_id: string;
+  inscription_id: string;
+  session_id: string;
+  session_nom: string;
+  step_type: StepType;
+  creneau_id: string | null;
+  creneau_ordre: number | null;
+}

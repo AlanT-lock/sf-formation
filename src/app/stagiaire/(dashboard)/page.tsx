@@ -3,16 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/Card";
 import { StepModal } from "@/components/stagiaire/StepModal";
-
-interface PendingStep {
-  trigger_id: string;
-  inscription_id: string;
-  session_id: string;
-  session_nom: string;
-  step_type: string;
-  creneau_id: string | null;
-  creneau_ordre: number | null;
-}
+import type { PendingStep } from "@/types/database";
 
 export default function StagiaireDashboardPage() {
   const [pending, setPending] = useState<PendingStep | null>(null);
@@ -22,7 +13,7 @@ export default function StagiaireDashboardPage() {
     try {
       const res = await fetch("/api/stagiaire/pending-step");
       const data = await res.json();
-      setPending(data.pending ?? null);
+      setPending((data.pending ?? null) as PendingStep | null);
     } catch {
       setPending(null);
     } finally {
