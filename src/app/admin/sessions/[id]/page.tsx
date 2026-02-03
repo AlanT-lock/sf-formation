@@ -41,8 +41,14 @@ export default async function AdminSessionDetailPage({
     .eq("session_id", id)
     .order("created_at");
 
-  const formation = session.formation as { id: string; nom: string } | null;
-  const formateur = session.formateur as { id: string; nom: string; prenom: string } | null;
+  type FormationRef = { id: string; nom: string } | null;
+  type FormateurRef = { id: string; nom: string; prenom: string } | null;
+  const formation: FormationRef = Array.isArray(session.formation)
+    ? (session.formation[0] as FormationRef) ?? null
+    : (session.formation as FormationRef);
+  const formateur: FormateurRef = Array.isArray(session.formateur)
+    ? (session.formateur[0] as FormateurRef) ?? null
+    : (session.formateur as FormateurRef);
   const sessionDates = (session.session_dates || []) as { id: string; date: string }[];
   const creneaux = (session.session_creneaux || []) as {
     id: string;
