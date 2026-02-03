@@ -14,7 +14,7 @@ export default async function AdminDashboardPage() {
     supabase.from("formateurs").select("id", { count: "exact", head: true }),
   ]);
 
-  const { data: recentSessions } = await supabase
+  const { data: rawSessions } = await supabase
     .from("sessions")
     .select(`
       id,
@@ -25,6 +25,15 @@ export default async function AdminDashboardPage() {
     `)
     .order("created_at", { ascending: false })
     .limit(5);
+
+  type FormateurRef = { nom: string; prenom: string } | null;
+  const recentSessions = (rawSessions ?? []).map((s) => ({
+    id: s.id,
+    nom: s.nom,
+    nb_creneaux: s.nb_creneaux,
+    created_at: s.created_at,
+    formateur: Array.isArray(s.formateur) ? (s.formateur[0] as FormateurRef) ?? null : (s.formateur as FormateurRef),
+  }));
 
   return (
     <div className="space-y-8">
@@ -96,7 +105,7 @@ export default async function AdminDashboardPage() {
             <p className="text-slate-500 text-sm">Aucune session pour le moment.</p>
           ) : (
             <ul className="divide-y divide-slate-100">
-              {recentSessions.map((s: { id: string; nom: string; nb_creneaux: number; formateur?: { nom: string; prenom: string } | null }) => (
+              {recentSessions.map((s) => (
                 <li key={s.id} className="py-3 first:pt-0">
                   <Link
                     href={`/admin/sessions/${s.id}`}
@@ -105,9 +114,7 @@ export default async function AdminDashboardPage() {
                     <span className="font-medium text-slate-800">{s.nom}</span>
                     <span className="text-sm text-slate-500">
                       {s.nb_creneaux} créneau(x)
-                      {s.formateur && typeof s.formateur === "object" && "prenom" in s.formateur
-                        ? ` • ${(s.formateur as { prenom: string }).prenom} ${(s.formateur as { nom: string }).nom}`
-                        : ""}
+                      {s.formateur ? ` • ${s.formateur.prenom} ${s.formateur.nom}` : ""}
                     </span>
                   </Link>
                 </li>
