@@ -69,7 +69,9 @@ export default async function AdminSessionPdfPage({
           ) : (
             <div className="space-y-6">
               {inscriptions.map((ins) => {
-                const st = ins.stagiaire as { nom: string; prenom: string } | null;
+                type StagiaireRef = { nom: string; prenom: string } | null;
+                const raw = ins.stagiaire;
+                const st: StagiaireRef = Array.isArray(raw) ? (raw[0] as StagiaireRef) ?? null : (raw as StagiaireRef);
                 const nomStagiaire = st ? `${st.prenom} ${st.nom}` : "—";
                 return (
                   <div key={ins.id} className="border-b border-slate-100 pb-6 last:border-0 last:pb-0">
