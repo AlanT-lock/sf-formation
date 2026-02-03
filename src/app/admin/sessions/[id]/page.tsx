@@ -3,8 +3,9 @@ import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
-import { ArrowLeft, Users, Calendar, Download } from "lucide-react";
+import { ArrowLeft, Calendar, Download } from "lucide-react";
 import { InscriptionsBlock } from "@/components/admin/InscriptionsBlock";
+import { AdminCreneauxBlock } from "@/components/admin/AdminCreneauxBlock";
 
 export const dynamic = "force-dynamic";
 
@@ -114,41 +115,7 @@ export default async function AdminSessionDetailPage({
       )}
 
       {creneaux.length > 0 && (
-        <Card>
-          <CardHeader>
-            <CardTitle>Créneaux d&apos;émargement</CardTitle>
-            <p className="text-sm text-slate-500 mt-1">
-              Heures renseignées par le formateur pendant la session
-            </p>
-          </CardHeader>
-          <CardContent>
-            <ul className="space-y-2">
-              {creneaux.sort((a, b) => a.ordre - b.ordre).map((c) => (
-                <li
-                  key={c.id}
-                  className="flex items-center justify-between py-2 border-b border-slate-100 last:border-0 text-sm"
-                >
-                  <span className="font-medium text-slate-700">Créneau {c.ordre}</span>
-                  <span className="text-slate-500">
-                    {c.heure_debut
-                      ? new Date(c.heure_debut).toLocaleTimeString("fr-FR", {
-                          hour: "2-digit",
-                          minute: "2-digit",
-                        })
-                      : "—"}
-                    {" → "}
-                    {c.heure_fin
-                      ? new Date(c.heure_fin).toLocaleTimeString("fr-FR", {
-                          hour: "2-digit",
-                          minute: "2-digit",
-                        })
-                      : "—"}
-                  </span>
-                </li>
-              ))}
-            </ul>
-          </CardContent>
-        </Card>
+        <AdminCreneauxBlock sessionId={id} creneaux={creneaux} />
       )}
 
       <InscriptionsBlock

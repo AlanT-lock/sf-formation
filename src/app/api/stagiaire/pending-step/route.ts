@@ -44,11 +44,30 @@ export async function GET() {
   const inscriptionBySession = Object.fromEntries(
     inscriptions.map((i) => [i.session_id, i.id])
   );
+
+  const documentStepTypes = ["test_pre", "points_cles", "test_fin", "enquete_satisfaction", "bilan_final"] as const;
+
   for (const t of triggers) {
     const inscriptionId = inscriptionBySession[t.session_id];
     if (!inscriptionId) continue;
     const key = `${inscriptionId}-${t.step_type}-${t.creneau_id ?? "null"}`;
     if (completedSet.has(key)) continue;
+    if (documentStepTypes.includes(t.step_type as (typeof documentStepTypes)[number])) {
+      const { data: sessionRow } = await supabase
+        .from("sessions")
+        .select("formation_id")
+        .eq("id", t.session_id)
+        .single();
+      if (sessionRow?.formation_id) {
+        const { data: fd } = await supabase
+          .from("formation_documents")
+          .select("rempli_par")
+          .eq("formation_id", sessionRow.formation_id)
+          .eq("document_type", t.step_type)
+          .single();
+        if (fd?.rempli_par === "formateur") continue;
+      }
+    }
     const sessionRow = await supabase
       .from("sessions")
       .select("nom")

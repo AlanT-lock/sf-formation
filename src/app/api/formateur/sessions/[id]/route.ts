@@ -25,6 +25,7 @@ export async function GET(
       id,
       nom,
       nb_creneaux,
+      formation_id,
       created_at,
       formation:formations(nom),
       session_creneaux(id, ordre, heure_debut, heure_fin),
@@ -36,6 +37,15 @@ export async function GET(
     .single();
   if (error || !data) {
     return NextResponse.json({ error: error?.message ?? "Session non trouvée" }, { status: 404 });
+  }
+
+  let formation_documents: { document_type: string; nom_affiche: string; rempli_par: string }[] = [];
+  if (data.formation_id) {
+    const { data: fd } = await supabase
+      .from("formation_documents")
+      .select("document_type, nom_affiche, rempli_par")
+      .eq("formation_id", data.formation_id);
+    formation_documents = (fd ?? []) as { document_type: string; nom_affiche: string; rempli_par: string }[];
   }
 
   const inscriptionIds =
@@ -55,6 +65,7 @@ export async function GET(
 
   return NextResponse.json({
     ...data,
+    formation_documents,
     step_completions: stepCompletions,
   });
 }

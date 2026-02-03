@@ -1,7 +1,8 @@
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/Card";
-import { Calendar, Users, GraduationCap, ArrowRight } from "lucide-react";
+import Link from "next/link";
+import { Calendar, Users, GraduationCap, ArrowRight, BarChart3 } from "lucide-react";
 
 export const dynamic = "force-dynamic";
 
@@ -44,7 +45,7 @@ export default async function AdminDashboardPage() {
         <p className="text-slate-600 mt-1">Vue d&apos;ensemble de la plateforme</p>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <Link href="/admin/sessions">
           <Card className="hover:border-primary-300 hover:shadow-md transition cursor-pointer h-full">
             <CardContent className="pt-5">
@@ -85,6 +86,21 @@ export default async function AdminDashboardPage() {
                 <div>
                   <p className="text-2xl font-bold text-slate-800">{formateursCount ?? 0}</p>
                   <p className="text-sm text-slate-600">Formateurs</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </Link>
+        <Link href="/admin/satisfaction">
+          <Card className="hover:border-primary-300 hover:shadow-md transition cursor-pointer h-full">
+            <CardContent className="pt-5">
+              <div className="flex items-center gap-3">
+                <div className="p-2 rounded-lg bg-green-50">
+                  <BarChart3 className="w-6 h-6 text-green-600" />
+                </div>
+                <div>
+                  <p className="text-sm text-slate-600">Enquête de satisfaction</p>
+                  <p className="text-xs text-slate-500 mt-0.5">Voir le dashboard</p>
                 </div>
               </div>
             </CardContent>

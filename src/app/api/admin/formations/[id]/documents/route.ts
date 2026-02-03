@@ -13,7 +13,7 @@ export async function GET(
   const { id } = await params;
   const { data, error } = await supabase
     .from("formation_documents")
-    .select("id, formation_id, document_type, nom_affiche, ordre, created_at")
+    .select("id, formation_id, document_type, nom_affiche, ordre, rempli_par, created_at")
     .eq("formation_id", id)
     .order("ordre");
   if (error) {
@@ -32,19 +32,20 @@ export async function PATCH(
   }
   const { id } = await params;
   const body = await request.json();
-  const { document_id, nom_affiche, ordre } = body;
+  const { document_id, nom_affiche, ordre, rempli_par } = body;
   if (!document_id) {
     return NextResponse.json(
       { error: "document_id requis" },
       { status: 400 }
     );
   }
-  const updates: { nom_affiche?: string; ordre?: number } = {};
+  const updates: { nom_affiche?: string; ordre?: number; rempli_par?: string } = {};
   if (typeof nom_affiche === "string") updates.nom_affiche = nom_affiche.trim();
   if (typeof ordre === "number") updates.ordre = ordre;
+  if (rempli_par === "stagiaire" || rempli_par === "formateur") updates.rempli_par = rempli_par;
   if (Object.keys(updates).length === 0) {
     return NextResponse.json(
-      { error: "nom_affiche ou ordre requis" },
+      { error: "nom_affiche, ordre ou rempli_par requis" },
       { status: 400 }
     );
   }

@@ -115,13 +115,14 @@ CREATE TABLE session_step_triggers (
   triggered_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- Documents (tests) par formation (nom affiché, ordre)
+-- Documents (tests) par formation (nom affiché, ordre, rempli par stagiaire ou formateur)
 CREATE TABLE formation_documents (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   formation_id UUID NOT NULL REFERENCES formations(id) ON DELETE CASCADE,
   document_type document_type NOT NULL,
   nom_affiche TEXT NOT NULL,
   ordre INTEGER NOT NULL DEFAULT 0,
+  rempli_par TEXT NOT NULL DEFAULT 'stagiaire' CHECK (rempli_par IN ('stagiaire', 'formateur')),
   created_at TIMESTAMPTZ DEFAULT NOW(),
   UNIQUE(formation_id, document_type)
 );
@@ -190,14 +191,14 @@ CREATE INDEX idx_step_completions_inscription ON step_completions(inscription_id
 INSERT INTO formations (nom) VALUES ('Hygiène alimentaire');
 
 -- Documents par défaut pour la formation Hygiène alimentaire
-INSERT INTO formation_documents (formation_id, document_type, nom_affiche, ordre)
-SELECT f.id, dt.document_type, dt.nom_affiche, dt.ordre
+INSERT INTO formation_documents (formation_id, document_type, nom_affiche, ordre, rempli_par)
+SELECT f.id, dt.document_type, dt.nom_affiche, dt.ordre, dt.rempli_par
 FROM formations f
 CROSS JOIN (
   VALUES
-    ('test_pre'::document_type, 'Test de pré-formation', 1),
-    ('points_cles'::document_type, 'Test Points clés', 2),
-    ('test_fin'::document_type, 'Test de fin de formation', 3),
-    ('enquete_satisfaction'::document_type, 'Enquête de satisfaction', 4),
-    ('bilan_final'::document_type, 'Bilan final', 5)
-) AS dt(document_type, nom_affiche, ordre);
+    ('test_pre'::document_type, 'Test de pré-formation', 1, 'stagiaire'),
+    ('points_cles'::document_type, 'Test Points clés', 2, 'stagiaire'),
+    ('test_fin'::document_type, 'Test de fin de formation', 3, 'stagiaire'),
+    ('enquete_satisfaction'::document_type, 'Enquête de satisfaction', 4, 'stagiaire'),
+    ('bilan_final'::document_type, 'Bilan final', 5, 'formateur')
+) AS dt(document_type, nom_affiche, ordre, rempli_par);

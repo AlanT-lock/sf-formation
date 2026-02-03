@@ -12,6 +12,7 @@ const DOCUMENTS = [
   { id: "points_cles", label: "Test Points clés" },
   { id: "test_fin", label: "Test de fin de formation" },
   { id: "enquete_satisfaction", label: "Enquête de satisfaction" },
+  { id: "bilan_final", label: "Bilan final" },
 ] as const;
 
 export default async function AdminSessionPdfPage({

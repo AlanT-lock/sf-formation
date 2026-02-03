@@ -105,12 +105,15 @@ export async function GET(request: NextRequest) {
       .from("emargements")
       .select(`
         signed_at,
+        signature_data,
         creneau:session_creneaux(ordre)
       `)
       .eq("inscription_id", inscription_id)
       .order("signed_at");
     addText("Feuille d'émargement", { bold: true });
     y -= 5;
+    const maxImgWidth = 200;
+    const maxImgHeight = 80;
     for (const e of emargements || []) {
       const rawC = e.creneau;
       const creneau = Array.isArray(rawC) ? rawC[0] : rawC;
@@ -122,11 +125,34 @@ export async function GET(request: NextRequest) {
           })
         : "—";
       addText(`Créneau ${ordre} : ${date}`);
+      if (e.signature_data && typeof e.signature_data === "string") {
+        try {
+          const base64 = e.signature_data.replace(/^data:image\/\w+;base64,/, "");
+          const bytes = new Uint8Array(Buffer.from(base64, "base64"));
+          const img = await doc.embedPng(bytes);
+          const scale = Math.min(maxImgWidth / img.width, maxImgHeight / img.height, 1);
+          const w = img.width * scale;
+          const h = img.height * scale;
+          if (y - h < 80) {
+            page = doc.addPage([595, 842]);
+            y = 800;
+          }
+          page.drawImage(img, {
+            x: margin,
+            y: y - h,
+            width: w,
+            height: h,
+          });
+          y -= h + lineHeight;
+        } catch {
+          addText("(signature non affichable)");
+        }
+      }
     }
     if (!emargements?.length) addText("Aucun émargement enregistré.");
   }
 
-  if (["test_pre", "points_cles", "test_fin", "enquete_satisfaction"].includes(document)) {
+  if (["test_pre", "points_cles", "test_fin", "enquete_satisfaction", "bilan_final"].includes(document)) {
     const docType =
       document === "test_pre"
         ? "Test de pré-formation"
@@ -134,7 +160,9 @@ export async function GET(request: NextRequest) {
         ? "Test Points clés"
         : document === "test_fin"
         ? "Test de fin de formation"
-        : "Enquête de satisfaction";
+        : document === "enquete_satisfaction"
+        ? "Enquête de satisfaction"
+        : "Bilan final";
     addText(docType, { bold: true });
     y -= 5;
     let questionsQuery = supabase

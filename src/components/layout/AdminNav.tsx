@@ -2,10 +2,11 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, Users, GraduationCap, Calendar, FileText, LogOut } from "lucide-react";
+import { LayoutDashboard, Users, GraduationCap, Calendar, FileText, BarChart3, LogOut } from "lucide-react";
 
 const links = [
   { href: "/admin", label: "Tableau de bord", icon: LayoutDashboard },
+  { href: "/admin/satisfaction", label: "Satisfaction", icon: BarChart3 },
   { href: "/admin/sessions", label: "Sessions", icon: Calendar },
   { href: "/admin/formations", label: "Formations", icon: FileText },
   { href: "/admin/stagiaires", label: "Stagiaires", icon: Users },
@@ -33,7 +34,7 @@ export function AdminNav() {
               href={href}
               className={`
                 flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition
-                ${pathname === href ? "bg-primary-50 text-primary-700" : "text-slate-600 hover:bg-slate-100"}
+                ${pathname === href || (href !== "/admin" && pathname.startsWith(href)) ? "bg-primary-50 text-primary-700" : "text-slate-600 hover:bg-slate-100"}
               `}
             >
               <Icon className="w-4 h-4" />

@@ -29,6 +29,7 @@ interface FormationDocument {
   document_type: DocumentType;
   nom_affiche: string;
   ordre: number;
+  rempli_par: "stagiaire" | "formateur";
   created_at: string;
 }
 
@@ -247,7 +248,7 @@ export function FormationContenu({ formationId, formationNom }: FormationContenu
                   setExpandedDoc(expandedDoc === doc.document_type ? null : doc.document_type)
                 }
               >
-                <div className="flex items-center gap-2 min-w-0">
+                <div className="flex items-center gap-2 min-w-0 flex-1">
                   {expandedDoc === doc.document_type ? (
                     <ChevronDown className="w-4 h-4 text-slate-500 shrink-0" />
                   ) : (
@@ -271,6 +272,34 @@ export function FormationContenu({ formationId, formationNom }: FormationContenu
                     </div>
                   ) : (
                     <span className="font-medium text-slate-800">{doc.nom_affiche}</span>
+                  )}
+                  {editingDocId !== doc.id && (
+                    <select
+                      value={doc.rempli_par ?? "stagiaire"}
+                      onChange={async (e) => {
+                        const val = e.target.value as "stagiaire" | "formateur";
+                        setSaving(true);
+                        try {
+                          const res = await fetch(`/api/admin/formations/${formationId}/documents`, {
+                            method: "PATCH",
+                            headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify({ document_id: doc.id, rempli_par: val }),
+                          });
+                          if (!res.ok) throw new Error((await res.json()).error);
+                          toast.success("Rempli par mis à jour");
+                          fetchDocuments();
+                        } catch (e) {
+                          toast.error(e instanceof Error ? e.message : "Erreur");
+                        } finally {
+                          setSaving(false);
+                        }
+                      }}
+                      onClick={(e) => e.stopPropagation()}
+                      className="ml-2 px-2 py-1 border border-slate-300 rounded text-sm bg-white"
+                    >
+                      <option value="stagiaire">Rempli par le stagiaire</option>
+                      <option value="formateur">Rempli par le formateur</option>
+                    </select>
                   )}
                 </div>
                 {editingDocId !== doc.id && (

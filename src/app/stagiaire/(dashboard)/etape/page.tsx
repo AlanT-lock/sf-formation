@@ -182,6 +182,9 @@ function EtapePageContent() {
 
           {!isEmargement && !loadingQuestions && questions.length > 0 && (
             <form onSubmit={handleSubmitForm} className="space-y-6">
+              <p className="text-sm text-slate-500">
+                Vous pouvez envoyer le formulaire à tout moment. Les champs ne sont pas obligatoires.
+              </p>
               {questions.map((q) => (
                 <div key={q.id}>
                   <label className="block text-sm font-medium text-slate-700 mb-1">
@@ -195,7 +198,6 @@ function EtapePageContent() {
                       }
                       className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm"
                       rows={3}
-                      required
                     />
                   )}
                   {q.type_reponse === "echelle" && (
@@ -205,7 +207,6 @@ function EtapePageContent() {
                         setReponses((prev) => ({ ...prev, [q.id]: e.target.value }))
                       }
                       className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm"
-                      required
                     >
                       <option value="">Choisir...</option>
                       {(q.options as { options?: string[] })?.options?.map((opt) => (
@@ -242,7 +243,6 @@ function EtapePageContent() {
                         setReponses((prev) => ({ ...prev, [q.id]: e.target.value }))
                       }
                       className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm"
-                      required
                     />
                   )}
                 </div>

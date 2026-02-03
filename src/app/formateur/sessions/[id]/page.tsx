@@ -7,6 +7,7 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import toast from "react-hot-toast";
+import Link from "next/link";
 import {
   ArrowLeft,
   Clock,
@@ -16,6 +17,7 @@ import {
   FileText,
   PenLine,
   RefreshCw,
+  Edit3,
 } from "lucide-react";
 import type { StepType } from "@/types/database";
 
@@ -48,11 +50,18 @@ interface StepCompletion {
   creneau_id: string | null;
 }
 
+interface FormationDocument {
+  document_type: string;
+  nom_affiche: string;
+  rempli_par: string;
+}
+
 interface Session {
   id: string;
   nom: string;
   nb_creneaux: number;
   formation: { nom: string } | null;
+  formation_documents?: FormationDocument[];
   session_creneaux: Creneau[];
   session_step_triggers: Trigger[];
   inscriptions: { id: string; stagiaire_id: string; stagiaire: { nom: string; prenom: string } | null }[];
@@ -381,21 +390,37 @@ export default function FormateurSessionPage() {
                       const nomStagiaire = ins.stagiaire
                         ? `${ins.stagiaire.prenom} ${ins.stagiaire.nom}`
                         : "—";
+                      const isBilanFormateur =
+                        doc.step_type === "bilan_final" &&
+                        (session.formation_documents ?? []).find(
+                          (fd) => fd.document_type === "bilan_final" && fd.rempli_par === "formateur"
+                        );
                       return (
                         <li
                           key={ins.id}
                           className="flex items-center justify-between gap-2 px-4 py-2.5"
                         >
                           <span className="text-sm text-slate-800">{nomStagiaire}</span>
-                          <span
-                            className={`text-xs font-medium px-2 py-1 rounded ${
-                              done
-                                ? "bg-green-100 text-green-800"
-                                : "bg-amber-100 text-amber-800"
-                            }`}
-                          >
-                            {done ? "Rempli / confirmé" : "En attente"}
-                          </span>
+                          <div className="flex items-center gap-2">
+                            {isBilanFormateur && (
+                              <Link
+                                href={`/formateur/sessions/${id}/bilan/${ins.id}`}
+                                className="inline-flex items-center gap-1 text-xs font-medium text-primary-600 hover:text-primary-700"
+                              >
+                                <Edit3 className="w-3.5 h-3.5" />
+                                {done ? "Modifier le bilan" : "Remplir le bilan"}
+                              </Link>
+                            )}
+                            <span
+                              className={`text-xs font-medium px-2 py-1 rounded ${
+                                done
+                                  ? "bg-green-100 text-green-800"
+                                  : "bg-amber-100 text-amber-800"
+                              }`}
+                            >
+                              {done ? "Rempli / confirmé" : "En attente"}
+                            </span>
+                          </div>
                         </li>
                       );
                     })}

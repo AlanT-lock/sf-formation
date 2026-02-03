@@ -5,7 +5,8 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import toast from "react-hot-toast";
-import { Users, Plus } from "lucide-react";
+import { Users, Plus, Eye } from "lucide-react";
+import Link from "next/link";
 
 interface Stagiaire {
   id: string;
@@ -149,9 +150,18 @@ export function InscriptionsBlock({
               return (
                 <li key={ins.id} className="py-4 first:pt-0">
                   <div className="flex flex-col gap-2">
-                    <p className="font-medium text-slate-800">
-                      {st?.prenom} {st?.nom}
-                    </p>
+                    <div className="flex items-center justify-between gap-2 flex-wrap">
+                      <p className="font-medium text-slate-800">
+                        {st?.prenom} {st?.nom}
+                      </p>
+                      <Link
+                        href={`/admin/sessions/${sessionId}/stagiaire/${ins.id}`}
+                        className="inline-flex items-center gap-1.5 text-sm text-primary-600 hover:text-primary-700"
+                      >
+                        <Eye className="w-4 h-4" />
+                        Voir les réponses
+                      </Link>
+                    </div>
                     {isEditing ? (
                       <div className="flex gap-2 items-end">
                         <input
