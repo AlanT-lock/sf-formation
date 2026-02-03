@@ -12,6 +12,13 @@ body {
   background: rgb(var(--background-rgb));
 }
 
+/* Évite le zoom automatique au focus sur iOS/Safari (zoom si font-size < 16px) */
+input,
+textarea,
+select {
+  font-size: 16px;
+}
+
 @layer utilities {
   .text-balance {
     text-wrap: balance;
